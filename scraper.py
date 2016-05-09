@@ -112,8 +112,7 @@ def scrape_dishes_az() :
             recipes = root.cssselect(".resource-list li")
             
             print str(len(recipes)) + " found"
-            for category in recipe_categories:
-                process_recipe_list(page, recipes)
+            process_recipe_list(page, recipes)
                 
 page = "http://www.bbc.co.uk/food/collections/slow_cooker_recipes"
 #scrape_recipe_list(page)
