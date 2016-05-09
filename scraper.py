@@ -72,7 +72,7 @@ def scrape_chefs_az() :
             chef_name = recipes_link.text_content()
             recipes_url_relative = recipes_link.attrib.get('href')
             recipes_url = urljoin(page, recipes_url_relative)
-            print recipes_url, chef_name.encode('utf-8').strip()
+            print "Chef: " + recipes_url, chef_name.encode('utf-8').strip()
             chef_model = { "url" : recipes_url, "name" : chef_name }
             
             scraperwiki.sqlite.save(unique_keys=["url"], table_name="chefs", data=chef_model)
@@ -83,7 +83,7 @@ def scrape_chefs_az() :
             recipes = root.cssselect(".resource-list li")
             
             print str(len(recipes)) + " found"
-            for category in recipe_categories:
+            for chef in chefs:
                 process_recipe_list(page, recipes)
 
 def scrape_dishes_az() :
