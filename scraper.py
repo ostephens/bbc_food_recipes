@@ -13,11 +13,27 @@ def process_recipe_list(url, recipes):
         scrape_recipe(recipe_url)
 
 def scrape_recipe(recipe_url) :
-    print "Scraping recipe microdata: " + recipe_url
-    items = microdata.get_items(urllib.urlopen(recipe_url))
-    for item in items:
-        recipe_model = { "url" : recipe_url, "name" : item.name, "recipe" : item.json() }
-        scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data=recipe_model)
+    if recipe_exists(recipe_url):        
+        print "Not Scraping " + recipe_url + ", already exists"
+    else:
+        print "Scraping recipe microdata: " + recipe_url
+        items = microdata.get_items(urllib.urlopen(recipe_url))
+        #get itemtype item.itemtype - look for http://schema.org/Recipe
+        # get all ingredients item.get_all('ingredients')
+        #grab all json:
+        for item in items:
+            recipe_model = { "url" : recipe_url, "name" : item.name, "recipe" : item.json() }
+            scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data=recipe_model)
+        print "Done scraping recipe microdata"
+
+def recipe_exists (url):
+    print "recipe_exists : " + url
+    count = 0
+    
+    result = scraperwiki.sqlite.execute("select count(*) from recipes where url = ?", (url))
+    count = int(result["data"][0][0])  
+    print "Recipe exists: " + str(count > 0)
+    return count > 0
 
 def scrape_chefs_az() :
     print "Scraping chefs a-z"
