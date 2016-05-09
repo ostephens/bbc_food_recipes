@@ -27,12 +27,9 @@ def scrape_recipe(recipe_url) :
         print "Done scraping recipe microdata"
 
 def recipe_exists (url):
-    print "recipe_exists : " + url
     count = 0
-    
     result = scraperwiki.sqlite.execute("select count(*) from recipes where url = ?", (url))
     count = int(result["data"][0][0])  
-    print "Recipe exists: " + str(count > 0)
     return count > 0
 
 def scrape_chefs_az() :
