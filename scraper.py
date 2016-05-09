@@ -46,9 +46,9 @@ def process_ingredient(element) :
 def recipe_exists (url):
     print "recipe_exists : " + url
     count = 0
-    try:
-        result = scraperwiki.sqlite.execute("select count(*) from recipes where url = ?", (url))
-        count = int(result["data"][0][0])  
+    
+    result = scraperwiki.sqlite.execute("select count(*) from recipes where url = ?", (url))
+    count = int(result["data"][0][0])  
         #print "result : " + str(result)
         #print "result['data'] : " + str(result["data"])
         #print "result['data'][0] : " + str(result["data"][0])
@@ -57,8 +57,6 @@ def recipe_exists (url):
         #print "result['data'] is list : " + str(type(result["data"]) is list)
         #print "result['data'][0][0] is list : " + str(type(result["data"][0][0]) is list)
         #print "Count : " + str(count)
-    except scraperwiki.sqlite.SqliteError, e:
-        print "Unexpected error:" + str(e)
     return count > 0
 
 def scrape_dishes_az() :
