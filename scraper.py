@@ -57,6 +57,35 @@ def recipe_exists (url):
         #print "Count : " + str(count)
     return count > 0
 
+def scrape_chefs_az() :
+    print "Scraping chefts a-z"
+    #For a-z - 97, 122
+    for i in range(97, 122):
+        #print i , chr(i) 
+        page = "http://www.bbc.co.uk/food/chefs/by/letters/" + chr(i)
+        print "Scraping page : " + page
+        html = scraperwiki.scrape(page)
+        root = lxml.html.fromstring(html)
+        chefs = root.cssselect(".resource.chef")
+        for chef in chefs:
+            recipes_link = category.cssselect("a")[0]
+            chef_name = recipes_link.text_content()
+            recipes_url_relative = recipes_link.attrib.get('href')
+            recipes_url = urljoin(page, recipes_url_relative)
+            print recipes_url, chef_name.encode('utf-8').strip()
+            chef_model = { "url" : recipes_url, "name" : chef_name }
+            
+            scraperwiki.sqlite.save(unique_keys=["url"], table_name="chefs", data=chef_model)
+            html = scraperwiki.scrape(recipes_url)
+            
+            root = lxml.html.fromstring(html)
+            
+            recipes = root.cssselect(".resource-list li")
+            
+            print str(len(recipes)) + " found"
+            for category in recipe_categories:
+                process_recipe_list(page, recipes)
+
 def scrape_dishes_az() :
     print "Scraping dishes a-z"
     #For a-z - 97, 122
@@ -89,4 +118,4 @@ def scrape_dishes_az() :
 page = "http://www.bbc.co.uk/food/collections/slow_cooker_recipes"
 #scrape_recipe_list(page)
 scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data={"url" : "http://test.org", "name" : "Test Recipe", "recipe" : "test recipe"})
-scrape_dishes_az()
+scrape_chefs_az()
