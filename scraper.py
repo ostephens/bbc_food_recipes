@@ -13,30 +13,11 @@ def process_recipe_list(url, recipes):
         scrape_recipe(recipe_url)
 
 def scrape_recipe(recipe_url) :
-    if not recipe_exists(recipe_url):        
-        print "Not Scraping " + recipe_url + ", already exists"
-    else:
-        print "Scraping recipe microdata: " + recipe_url
-        items = microdata.get_items(urllib.urlopen(recipe_url))
-        for item in items:
-            recipe_model = { "url" : recipe_url, "name" : item.name, "recipe" : item.json() }
-            scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data=recipe_model)
-
-def recipe_exists (url):
-    print "recipe_exists : " + url
-    count = 0
-    
-    result = scraperwiki.sqlite.execute("select count(*) from recipes where url = ?", (url))
-    count = int(result["data"][0][0])  
-        #print "result : " + str(result)
-        #print "result['data'] : " + str(result["data"])
-        #print "result['data'][0] : " + str(result["data"][0])
-        #print "result['data'][0][0] : " + str(result["data"][0][0])
-        #print "result is list : " + str(type(result) is list)
-        #print "result['data'] is list : " + str(type(result["data"]) is list)
-        #print "result['data'][0][0] is list : " + str(type(result["data"][0][0]) is list)
-        #print "Count : " + str(count)
-    return count > 0
+    print "Scraping recipe microdata: " + recipe_url
+    items = microdata.get_items(urllib.urlopen(recipe_url))
+    for item in items:
+        recipe_model = { "url" : recipe_url, "name" : item.name, "recipe" : item.json() }
+        scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data=recipe_model)
 
 def scrape_chefs_az() :
     print "Scraping chefs a-z"
