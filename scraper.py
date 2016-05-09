@@ -55,6 +55,7 @@ def recipe_exists (url):
         #print "result['data'] is list : " + str(type(result["data"]) is list)
         #print "result['data'][0][0] is list : " + str(type(result["data"][0][0]) is list)
         #print "Count : " + str(count)
+    print "Recipe exists? " + str(count > 0)
     return count > 0
 
 def scrape_chefs_az() :
@@ -83,8 +84,7 @@ def scrape_chefs_az() :
             recipes = root.cssselect(".resource-list li")
             
             print str(len(recipes)) + " found"
-            for chef in chefs:
-                process_recipe_list(page, recipes)
+            process_recipe_list(page, recipes)
 
 def scrape_dishes_az() :
     print "Scraping dishes a-z"
