@@ -24,7 +24,7 @@ def scrape_recipe(recipe_url) :
     if not process_existing and recipe_exists(recipe_url):        
         print "Not Scraping " + recipe_url + ", already exists"
     else:
-        print "Scraping " + recipe_url
+        print "Scraping recipe microdata: " + recipe_url
         items = microdata.get_items(urllib.urlopen(recipe_url))
         #get itemtype item.itemtype - look for http://schema.org/Recipe
         # get all ingredients item.get_all('ingredients')
@@ -32,6 +32,7 @@ def scrape_recipe(recipe_url) :
         for item in items:
             recipe_model = { "url" : recipe_url, "name" : item.name, "recipe" : item.json() }
             scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data=recipe_model)
+        print "Done scraping recipe microdata"
 
 def process_ingredient(element) :
     ingredient = element.text_content() #lxml.html.text_content(
@@ -87,5 +88,5 @@ def scrape_dishes_az() :
                 
 page = "http://www.bbc.co.uk/food/collections/slow_cooker_recipes"
 #scrape_recipe_list(page)
-scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data={"url" : "http://test.org", "name" : "Test Recipe", "ingredients" : "test ingredient"})
+scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data={"url" : "http://test.org", "name" : "Test Recipe", "recipe" : "test recipe"})
 scrape_dishes_az()
