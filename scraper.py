@@ -90,4 +90,7 @@ def scrape_dishes_az() :
                 
 page = "http://www.bbc.co.uk/food/collections/slow_cooker_recipes"
 #scrape_recipe_list(page)
+recipe_model = { "url" : "http://test.org", "name" : "Test Recipe", "ingredients" : list() }
+recipe_model["ingredients"].append("Test ingredient")
+scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data=recipe_model)
 scrape_dishes_az()
