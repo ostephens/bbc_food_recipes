@@ -68,7 +68,7 @@ def scrape_chefs_az() :
         root = lxml.html.fromstring(html)
         chefs = root.cssselect(".resource.chef")
         for chef in chefs:
-            recipes_link = category.cssselect("a")[0]
+            recipes_link = chef.cssselect("a")[0]
             chef_name = recipes_link.text_content()
             recipes_url_relative = recipes_link.attrib.get('href')
             recipes_url = urljoin(page, recipes_url_relative)
