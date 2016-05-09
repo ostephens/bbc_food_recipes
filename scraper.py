@@ -37,7 +37,7 @@ def scrape_recipe(recipe_url) :
 def process_ingredient(element) :
     ingredient = element.text_content() #lxml.html.text_content(
     ingredient_model = { "name" : ingredient }
-    print ingredient
+    print ingredient.encode('utf-8')
     scraperwiki.sqlite.save(unique_keys=["name"], table_name="ingredients", data=ingredient_model)
     return ingredient_model
 
@@ -72,7 +72,7 @@ def scrape_dishes_az() :
             category_name = recipes_link.text_content()
             recipes_url_relative = recipes_link.attrib.get('href')
             recipes_url = urljoin(page, recipes_url_relative)
-            print recipes_url, category_name
+            print recipes_url, category_name.encode('utf-8').strip
             category_model = { "url" : recipes_url, "name" : category_name }
             
             scraperwiki.sqlite.save(unique_keys=["url"], table_name="categories", data=category_model)
