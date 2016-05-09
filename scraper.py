@@ -44,6 +44,26 @@ def scrape_chefs_az() :
             
             print str(len(recipes)) + " found"
             process_recipe_list(page, recipes)
-                
+
+def scrape_ingredients_az() :
+    print "Scraping ingredients a-z"
+    #For a-z - 97, 122
+    for i in range(97, 122):
+        page = "http://www.bbc.co.uk/food/ingredients/by/letter/" + chr(i)
+        html = scraperwiki.scrape(page)
+        root = lxml.html.fromstring(html)
+        ingredients = root.cssselect(".resource.food")
+        for ingredient in ingredients:
+            recipes_link = ingredient.cssselect("a")[0]
+            ingredient_name = recipes_link.text_content()
+            recipes_url_relative = recipes_link.attrib.get('href')
+            recipes_url = urljoin(page, recipes_url_relative)
+            print "Ingredient: " + recipes_url, ingredient_name.encode('utf-8').strip()
+            html = scraperwiki.scrape(recipes_url)            
+            root = lxml.html.fromstring(html)
+            recipes = root.cssselect(".resource-list li")
+            print str(len(recipes)) + " found"
+            process_recipe_list(page, recipes)
+
 scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data={"url" : "http://test.org", "name" : "Test Recipe", "recipe" : "test recipe"})
-scrape_chefs_az()
+scrape_ingredients_az()
