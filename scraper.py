@@ -1,5 +1,7 @@
 import scraperwiki
-import lxml.html           
+import lxml.html
+import microdata
+import urllib
 from urlparse import urljoin
 process_existing = False
 def scrape_recipe_list(url) :
@@ -23,18 +25,13 @@ def scrape_recipe(recipe_url) :
         print "Not Scraping " + recipe_url + ", already exists"
     else:
         print "Scraping " + recipe_url
-        html = scraperwiki.scrape(recipe_url)
-        root = lxml.html.fromstring(html)
-        hrecipe_element = root.cssselect(".hrecipe")[0]
-        hrecipe = lxml.html.tostring(hrecipe_element)
-        print hrecipe
-        recipe_name = hrecipe_element.cssselect(".fn")[0].text_content()
-        ingredients = hrecipe_element.cssselect("#ingredients .ingredient")
-        print recipe_name, str(len(ingredients)) + " ingredients"
-        recipe_model = { "url" : recipe_url, "name" : recipe_name, "ingredients" : list() }
-        for ingredient in ingredients:
-            recipe_model["ingredients"].append(process_ingredient(ingredient))
-        scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data=recipe_model)
+        items = microdata.get_items(urllib.urlopen(recipe_url))
+        #get itemtype item.itemtype - look for http://schema.org/Recipe
+        # get all ingredients item.get_all('ingredients')
+        #grab all json:
+        for item in items:
+            recipe_model = { "url" : recipe_url, "name" : item.name, "recipe" : item.json() }
+            scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data=recipe_model)
 
 def process_ingredient(element) :
     ingredient = element.text_content() #lxml.html.text_content(
