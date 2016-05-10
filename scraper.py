@@ -30,7 +30,7 @@ def scrape_az(path,selector) :
         page = "http://www.bbc.co.uk/food/"+path+"/by/letters/" + chr(i)
         html = scraperwiki.scrape(page)
         root = lxml.html.fromstring(html)
-        chefs = root.cssselect(selector)
+        items = root.cssselect(selector)
         for item in items:
             recipes_link = item.cssselect("a")[0]
             item_name = recipes_link.text_content()
@@ -79,7 +79,6 @@ def results_list(url):
             #print "returning..."
             return True
 
-scraperwiki.sqlite.execute("drop table chefs")
 scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data={"url" : "http://test.org", "name" : "Test Recipe", "recipe" : "test recipe"})
 scrape_az("chefs",".resource.chef")
 scrape_az("ingredients",".resource.food")
