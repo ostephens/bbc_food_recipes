@@ -3,6 +3,7 @@ import lxml.html
 import microdata
 import urllib
 from urlparse import urljoin
+import time
 
 def process_recipe_list(url, recipes):
     print "process_recipe_list : " + str(len(recipes)) + " recipes found"
@@ -57,35 +58,45 @@ def scrape_chefs_az() :
             
             #print str(len(recipes)) + " found"
             #process_recipe_list(page, recipes)
-            see_all(recipes_url)
+            try:
+                see_all(recipes_url)
+            except:
+                print "ERROR: Could not find link to all recipes"
 
 def see_all(url):
-    page = url
-    html = scraperwiki.scrape(page)
+    html = scraperwiki.scrape(url)
     root = lxml.html.fromstring(html)
     see_all_link = root.cssselect(".see-all-search")[0].attrib.get('href')
-    see_all_url = urljoin(page,see_all_link)
-    html = scraperwiki.scrape(see_all_url)
+    see_all_url = urljoin(url,see_all_link)
+    try:
+        results_list(see_all_url)
+    except:
+        print "ERROR: Failed to get all recipes"
+    
+
+def results_list(url):
+    html = scraperwiki.scrape(url)
     root = lxml.html.fromstring(html)
     recipes = root.cssselect("#article-list li")
     for recipe in recipes:
         recipe_link = recipe.cssselect("a")[0]
         recipe_url_relative = recipe_link.attrib.get('href')
-        recipe_url = urljoin(page,recipe_url_relative)
+        recipe_url = urljoin(url,recipe_url_relative)
         scrape_recipe(recipe_url)
+    print(len(root.cssselect(".pagInfo-page-numbers-next.empty")))
+    if(len(root.cssselect(".pagInfo-page-numbers-next.empty"))>0):
+        print "returning..."
+        return True
     results_nav = root.cssselect(".see-all-search")
     for prev_next in results_nav:
         if(prev_next.attrib.get('rel')=="next"):
             next_link = prev_next.attrib.get('href')
-            next_url = urljoin(page,next_link)
+            next_url = urljoin(url,next_link)
             print "Going to next page: " + next_url
-            see_all(next_url)
-
-
-    #now loop through the list of recipes and get URLs
-    #pass URL to scrape_recipe
-    #find 'next' link and then loop again
-    #exit loop when no 'next' link found
+            time.sleep(0.5)
+            results_list(next_url)
+            print "returning..."
+            return True
 
 
 def scrape_ingredients_az() :
@@ -114,4 +125,5 @@ def scrape_ingredients_az() :
 
 scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data={"url" : "http://test.org", "name" : "Test Recipe", "recipe" : "test recipe"})
 #scrape_ingredients_az()
+#see_all("http://www.bbc.co.uk/food/chefs/aldo_zilli")
 scrape_chefs_az()
