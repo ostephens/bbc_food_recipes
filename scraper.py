@@ -23,8 +23,14 @@ def recipe_exists (url):
     count = int(result["data"][0][0])  
     return count > 0
 
-def scrape_az(path,selector) :
-    print "Scraping chefs a-z"
+def tracker_exists(url):
+    count = 0
+    result = scraperwiki.sqlite.execute("select count(*) from tracker where url = ?", (url))
+    count = int(result["data"][0][0])  
+    return count > 0
+
+def get_urlist_az(path,selector) :
+    print "Scraping a-z for URLs"
     #For a-z - 97, 122
     for i in range(97, 122):
         page = "http://www.bbc.co.uk/food/"+path+"/by/letters/" + chr(i)
@@ -36,13 +42,26 @@ def scrape_az(path,selector) :
             item_name = recipes_link.text_content()
             recipes_url_relative = recipes_link.attrib.get('href')
             recipes_url = urljoin(page, recipes_url_relative)
-            print "Item: " + recipes_url, item_name.encode('utf-8').strip()
-            try:
-                see_all(recipes_url)
-            except:
-                e = "ERROR: Could not find link to all recipes"
-                e_record = {"url": recipes_url, "error": e}
-                scraperwiki.sqlite.save(unique_keys=["url"], table_name="errors", data=e_record)
+            #maybe take out the time in the line below
+            #need to save selector as well
+            if tracker_exists(recipes_url):
+                return True
+            else:
+                tracker_model = { "url" : recipes_url, "status" : "", "time" : time.time() }
+                scraperwiki.sqlite.save(unique_keys=["url"], table_name="tracker", data=tracker_model)
+
+def scrape_by_url(url) :
+    recipes_url = url
+    try:
+        see_all(recipes_url)
+        tracker_model = { "url" : recipes_url, "status" : "SUCCESS", "time" : time.time() }
+        scraperwiki.sqlite.save(unique_keys=["url"], table_name="tracker", data=tracker_model)
+    except (KeyboardInterrupt, SystemExit):
+        exit()
+    except:
+        tracker_model = { "url" : recipes_url, "status" : "ERROR", "time" : time.time() }
+        scraperwiki.sqlite.save(unique_keys=["url"], table_name="tracker", data=tracker_model)
+
 
 def see_all(url):
     html = scraperwiki.scrape(url)
@@ -51,10 +70,11 @@ def see_all(url):
     see_all_url = urljoin(url,see_all_link)
     try:
         results_list(see_all_url)
+    except (KeyboardInterrupt, SystemExit):
+        exit()
     except:
-        e = "ERROR: Failed to get all recipes"
-        e_record = {"url": recipes_url, "error": e}
-        scraperwiki.sqlite.save(unique_keys=["url"], table_name="errors", data=e_record)
+        tracker_model = { "url" : recipes_url, "status" : "ERROR", "time" : time.time() }
+        scraperwiki.sqlite.save(unique_keys=["url"], table_name="tracker", data=tracker_model)
 
 def results_list(url):
     html = scraperwiki.scrape(url)
@@ -79,7 +99,24 @@ def results_list(url):
             #print "returning..."
             return True
 
-scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data={"url" : "http://test.org", "name" : "Test Recipe", "recipe" : "test recipe"})
-scrape_az("chefs",".resource.chef")
-scrape_az("ingredients",".resource.food")
-scraperwiki.sqlite.execute("delete from recipes where url = ?", ["http://test.org"])
+#Make sure tables exit
+tracker_model = { "url" : "http://test.org","status" : "", "time" : time.time() }
+scraperwiki.sqlite.save(unique_keys=["url"], table_name="tracker", data=tracker_model)
+scraperwiki.sqlite.execute("delete from tracker where url = \"http://test.org\"")
+recipe_model = {"url" : "http://test.org", "name" : "Test Recipe", "recipe" : "test recipe"}
+scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data=recipe_model)
+scraperwiki.sqlite.execute("delete from recipes where url = \"http://test.org\"")
+
+#scrape a list of seeding URLs - will only update if new
+get_urlist_az("chefs",".resource.chef")
+get_urlist_az("ingredients",".resource.food")
+
+#scrape all URLs currently listed as errors
+urls = scraperwiki.sqlite.execute("select url from tracker where (status is NULL OR status = 'ERROR' or status = '')")
+for url in urls['data']:
+    scrape_by_url(url[0])
+
+#scrape URLs that haven't been updated in a week
+urls = scraperwiki.sqlite.execute("select url from tracker where status = 'SUCCESS' and time < ?",time.time()-604800.0)
+for url in urls['data']:
+    scrape_by_url(url[0])
