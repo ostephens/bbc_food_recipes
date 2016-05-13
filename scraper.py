@@ -13,6 +13,7 @@ def scrape_recipe(recipe_url) :
         #print "Scraping recipe microdata: " + recipe_url
         items = microdata.get_items(urllib.urlopen(recipe_url))
         for item in items:
+            print "Scraping: " + item.name + "from" + recipe_url
             recipe_model = { "url" : recipe_url, "name" : item.name, "recipe" : item.json() }
             scraperwiki.sqlite.save(unique_keys=["url"], table_name="recipes", data=recipe_model)
         return True
@@ -52,6 +53,7 @@ def get_urlist_az(path,selector) :
 
 def scrape_by_url(url) :
     recipes_url = url
+    print "Starting from: " + recipes_url
     try:
         see_all(recipes_url)
         tracker_model = { "url" : recipes_url, "status" : "SUCCESS", "time" : time.time() }
