@@ -100,7 +100,8 @@ def results_list(url):
             results_list(next_url)
             #print "returning..."
             return True
-
+#temporary line to get rid of unwanted table
+scraperwiki.sqlite.execute("drop table errors")
 #Make sure tables exit
 tracker_model = { "url" : "http://test.org","status" : "", "time" : time.time() }
 scraperwiki.sqlite.save(unique_keys=["url"], table_name="tracker", data=tracker_model)
@@ -114,7 +115,7 @@ get_urlist_az("chefs",".resource.chef")
 get_urlist_az("ingredients",".resource.food")
 
 #scrape all URLs currently listed as errors
-urls = scraperwiki.sqlite.execute("select url from tracker where (status is NULL OR status = 'ERROR' or status = '')")
+urls = scraperwiki.sqlite.execute("select url from tracker where (status is NULL OR status = 'ERROR' or status = '') ORDER BY time")
 for url in urls['data']:
     scrape_by_url(url[0])
 
