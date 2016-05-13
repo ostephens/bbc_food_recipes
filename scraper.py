@@ -31,7 +31,7 @@ def tracker_exists(url):
     return count > 0
 
 def get_urlist_az(path,selector) :
-    print "Scraping a-z for URLs"
+    print "Scraping a-z " + path + " for URLs"
     #For a-z - 97, 122
     for i in range(97, 122):
         page = "http://www.bbc.co.uk/food/"+path+"/by/letters/" + chr(i)
@@ -100,9 +100,8 @@ def results_list(url):
             results_list(next_url)
             #print "returning..."
             return True
-#temporary line to get rid of unwanted table
-scraperwiki.sqlite.execute("drop table errors")
-#Make sure tables exit
+
+#Make sure tables exist
 tracker_model = { "url" : "http://test.org","status" : "", "time" : time.time() }
 scraperwiki.sqlite.save(unique_keys=["url"], table_name="tracker", data=tracker_model)
 scraperwiki.sqlite.execute("delete from tracker where url = \"http://test.org\"")
